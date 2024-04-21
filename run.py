@@ -152,7 +152,7 @@ def main(df,working_path):
     
 
 sheet_name = 'raw_data'
-working_path = r'C:/Users/yjlee/OneDrive/바탕 화면/working_python/' # It Should be modified as your Environment, it just a example!!
+working_path = r'C:/JK_Project/COSCO_SR/' # It Should be modified as your Environment, it just a example!!
 excel_file_path = working_path + 'input_data.xlsx' 
 
 df = read_excel_file(excel_file_path,sheet_name)

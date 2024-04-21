@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import os
 import pandas as pd
 from openpyxl import Workbook
 import random
@@ -152,8 +153,10 @@ def main(df,working_path):
     
 
 sheet_name = 'raw_data'
-working_path = r'C:/JK_Project/COSCO_SR/' # It Should be modified as your Environment, it just a example!!
+working_path = os.getcwd()
 excel_file_path = working_path + 'input_data.xlsx' 
 
 df = read_excel_file(excel_file_path,sheet_name)
 main(df,working_path)
+
+

@@ -1,28 +1,24 @@
+#!/usr/bin/python
+
 import pandas as pd
 from openpyxl import Workbook
 import random
-from pprint import pprint
 import numpy as np
 
 def read_excel_file(file_path, sheet_name):
     try:
-        # Excel ÆÄÀÏ¿¡¼­ ÁöÁ¤µÈ ½ÃÆ®¸¦ ÀĞ¾î¿Í¼­ DataFrameÀ¸·Î º¯È¯
         df = pd.read_excel(file_path, sheet_name=sheet_name, dtype=str)
         return df
     except FileNotFoundError:
-        print("ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.")
+        print("File not found.")
         return None
     except Exception as e:
-        print("¿À·ù ¹ß»ı:", e)
+        print("An error occurred.:", e)
         return None
-def _to_excel_df(df, file_path, sheet_name):
-    df.to_excel(file_path, sheet_name=sheet_name, index=True)  # index=False·Î ÁöÁ¤ÇÏ¸é DataFrameÀÇ ÀÎµ¦½º´Â ÀúÀåµÇÁö ¾ÊÀ½
 
 
 def write_df_to_excel(ws, dataframe, start_row, start_column, save_index=True):
-    row_index = start_row  # Çà ÀÎµ¦½º ÃÊ±âÈ­
-    
-    # µ¥ÀÌÅÍ¸¦ ÀúÀå
+    row_index = start_row  
     for idx, (index, row) in enumerate(dataframe.iterrows(), start=row_index):
         col_index = start_column
         if save_index:
@@ -48,7 +44,7 @@ def fill_value (col, value, MODELs):
         
     return new_value
 
-def expand_df(df, num_rows):
+def expand_df(df):
     if len(df) < 5:
         new_df = pd.DataFrame({
             'BL NO': df.iloc[0]['BL NO'],
@@ -63,7 +59,7 @@ def expand_df(df, num_rows):
 
 def fill_loss_df (df, MODELs):
     if len(df) < 5:
-        df = expand_df(df,5)
+        df = expand_df(df)
 
     for index, row in df.iterrows():
         for col in ['MODEL','CHASSISNO.']:
@@ -73,7 +69,8 @@ def fill_loss_df (df, MODELs):
     return df
 
     
-def _run(df):
+def main(df,working_path):
+    df = gen_mandatory_df(df)
     cont_header_df = pd.DataFrame()
     wb = Workbook()
     min_cont_cnt = 5
@@ -149,14 +146,14 @@ def _run(df):
 
             cont_total_cnt += (cont_cnt + 1)
             info_cnt += cont_cnt
-         
-    wb.save('../result_data.xlsx')
 
+    
+    wb.save(working_path + 'result_data.xlsx')
+    
 
-excel_file_path = '../input_data.xlsx'  # ÀĞ¾î¿Ã Excel ÆÄÀÏÀÇ °æ·Î
 sheet_name = 'raw_data'
+working_path = r'C:/Users/yjlee/OneDrive/ë°”íƒ• í™”ë©´/working_python/' # It Should be modified as your Environment, it just a example!!
+excel_file_path = working_path + 'input_data.xlsx' 
 
 df = read_excel_file(excel_file_path,sheet_name)
-
-man_df = gen_mandatory_df(df)
-_run(man_df)
+main(df,working_path)

@@ -149,12 +149,12 @@ def main(df,working_path):
             info_cnt += cont_cnt
 
     
-    wb.save(working_path + 'result_data.xlsx')
+    wb.save(working_path + '/result_data.xlsx')
     
 
 sheet_name = 'raw_data'
 working_path = os.getcwd()
-excel_file_path = working_path + 'input_data.xlsx' 
+excel_file_path = working_path + '/input_data.xlsx' 
 
 df = read_excel_file(excel_file_path,sheet_name)
 main(df,working_path)

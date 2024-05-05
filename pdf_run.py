@@ -63,7 +63,6 @@ def summary_table(df, krw_list, pdf_directory):
         bl_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Payment before delivery of Bill Of Lading (Export) or containers (Import)")
         total_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Total")
         first_uni_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "UNI")
-        total_cnt_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Total Amount:")
         krw_idx = len(lines) - 1 - next(idx for idx, line in enumerate(reversed(lines)) if line.rstrip() == "KRW")
 
         desc_cnt = len(lines[total_idx + 1 : first_uni_idx])
@@ -82,11 +81,6 @@ def summary_table(df, krw_list, pdf_directory):
         mapping = dict(zip(desc, amount))
         summary_df = pd.DataFrame([mapping], index = [bl])
         
-        
-        col_list = list(summary_df.columns)
-        col_list.remove('Export Documentation Fee')
-
-        summary_df[col_list] = summary_df[col_list] * int(qty)
  
         summary_df['QTY'] = qty
         summary_df['KRW_amount'] = krw_amount

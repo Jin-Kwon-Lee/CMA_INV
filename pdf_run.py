@@ -1,8 +1,6 @@
 import os
 import pandas as pd
 import fitz
-# 출력 옵션 설정
-pd.set_option('display.max_colwidth', None)
 
 def read_excel_file(file_path, sheet_name):
     try:
@@ -54,10 +52,12 @@ def KRW_new_name(df, ori_file_list, pdf_directory):
         
 def summary_table(df, krw_list, pdf_directory):
     total_df = pd.DataFrame()
+    amount_df= pd.DataFrame()
+    
     for new_name in krw_list:
         new_file_path = pdf_directory + '/' + new_name + '.pdf'
         lines = read_lines_pdf(new_file_path)
-        
+
         cont_qty_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Qty")
         bl_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Payment before delivery of Bill Of Lading (Export) or containers (Import)")
         total_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Total")
@@ -67,14 +67,30 @@ def summary_table(df, krw_list, pdf_directory):
         desc_cnt = len(lines[total_idx + 1 : first_uni_idx])
         
         qty = lines[cont_qty_idx + 4]
-        bl = lines[bl_idx + 1]
+        bl = lines[bl_idx + 1].strip()
         desc = lines[total_idx + 1 : first_uni_idx]
         amount = lines[total_cnt_idx - desc_cnt : total_cnt_idx]
-        mapping = dict(zip(desc, amount))
-        df = pd.DataFrame([mapping], index = [bl])
-        df['QTY'] = qty
+        amount = [float(x.strip().replace(',','')) for x in amount]
         
-        total_df = pd.concat([total_df, df], axis=0)
+        amount_df = df.loc[(df['Shipment Ref.'] == bl),['Amount','Currency']]
+        
+        krw_amount = amount_df[(amount_df['Currency'] == 'KRW')]['Amount'].iloc[0]
+        usd_amount = amount_df[(amount_df['Currency'] == 'USD')]['Amount'].iloc[0]
+       
+        mapping = dict(zip(desc, amount))
+        summary_df = pd.DataFrame([mapping], index = [bl])
+        
+        
+        col_list = list(summary_df.columns)
+        col_list.remove('Export Documentation Fee')
+
+        summary_df[col_list] = summary_df[col_list] * int(qty)
+ 
+        summary_df['QTY'] = qty
+        summary_df['KRW_amount'] = krw_amount
+        summary_df['USD_amount'] = usd_amount
+
+        total_df = pd.concat([total_df, summary_df], axis=0)
 
     return total_df
 
@@ -93,11 +109,12 @@ ori_file_list = df['Invoice Ref.'].tolist()
 _rename_file(df, ori_file_list, pdf_directory)
 
 krw_list = KRW_new_name(df, ori_file_list, pdf_directory)
+total_df = summary_table(df, krw_list, pdf_directory)
 
-df = summary_table(df, krw_list, pdf_directory)
 
+# DataFrame에서 마지막에 위치시킬 열을 제외한 열 선택하여 새로운 DataFrame 생성
+last_columns = ['QTY','KRW_amount','USD_amount']
+other_columns = [col for col in total_df.columns if col not in last_columns]
+total_df = total_df[other_columns + last_columns]
 
-qty_column = df.pop('QTY')
-df['QTY'] = qty_column
-
-df.to_excel('result.xlsx')
+total_df.to_excel('result.xlsx')

@@ -57,19 +57,21 @@ def summary_table(df, krw_list, pdf_directory):
     for new_name in krw_list:
         new_file_path = pdf_directory + '/' + new_name + '.pdf'
         lines = read_lines_pdf(new_file_path)
+        
 
         cont_qty_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Qty")
         bl_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Payment before delivery of Bill Of Lading (Export) or containers (Import)")
         total_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Total")
         first_uni_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "UNI")
         total_cnt_idx = next(idx for idx, line in enumerate(lines) if line.rstrip() == "Total Amount:")
+        krw_idx = len(lines) - 1 - next(idx for idx, line in enumerate(reversed(lines)) if line.rstrip() == "KRW")
 
         desc_cnt = len(lines[total_idx + 1 : first_uni_idx])
         
         qty = lines[cont_qty_idx + 4]
         bl = lines[bl_idx + 1].strip()
         desc = lines[total_idx + 1 : first_uni_idx]
-        amount = lines[total_cnt_idx - desc_cnt : total_cnt_idx]
+        amount = lines[krw_idx + 1 : krw_idx + 1 + desc_cnt]
         amount = [float(x.strip().replace(',','')) for x in amount]
         
         amount_df = df.loc[(df['Shipment Ref.'] == bl),['Amount','Currency']]
